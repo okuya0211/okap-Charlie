@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+  <html style="height:100%;">
+    <head>
+      </br>
+      <meta name = "viewport" content = "width = device-width, initial-scale = 1">
+      <link rel = "stylesheet"
+         href = "https://fonts.googleapis.com/icon?family=Material+Icons">
+      <link type="text/css" rel="stylesheet" href="materialize/css/materialize.css"  media="screen,projection"/>
+      <script type = "text/javascript"
+         src = "https://code.jquery.com/jquery-2.1.1.min.js"></script>           
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js">
+      </script>
+      <!--<link type="text/css" rel="stylesheet" href="materialize/css/materialize.css"  media="screen,projection"/>
+      <link rel = "stylesheet"
+         href = "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/css/materialize.min.css">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+      M.AutoInit();
+      </script>-->
+      <style>
+      	#map {
+      	  width: 70%;
+          height: 55%;
+          margin: auto;
+      	}
+      </style>
+      <script>
+      	var map;
+      	var bo_selectFlg = false;//trueだと既にピンを設置している
+      	var de_selectFlg = false;//trueだと既にピンを設置している
+      	var de_markerFlg = false;//trueでピンを中央に表示し続ける
+      	var bo_markerFlg = false;//trueでピンを中央に表示し続ける
+      	var de_marker;//乗車地ピン
+      	var bo_marker;//降車地ピン
+      	var directionsService;//APIを使うため
+      	var directionsDisplay;//APIを使うため
+      	var startSpot="";//乗車地
+      	var endSpot="";//降車地
+      	var distance;//距離
+      	var duration;//かかる時間
+      	var routeResetFlg = false;//trueでルート表示をしている状態
+      	var coord_LL;//LatLng型で座標のデータを取得
+      	var coord = new Array(2);//座標データ（int型配列）
+      	
+      	//距離、時間表示用
+      	var km = "";//この単位までいかない場合も表示させるので初期化しておく
+      	var meter;
+      	var hour = "";
+      	var minute = "";
+      	var seconds;
+      	
+      	function initMap() {
+      	  //マップ初期化
+          map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 34.666655, lng: 133.918335},//マップの初期表示場所
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            zoom: 14,
+            disableDefaultUI: true//デフォルトのUIを消す
+          });
+          
+          //ルート検索用
+          directionsService = new google.maps.DirectionsService();
+          
+		  //中央に乗車地ピンを表示し続ける
+          google.maps.event.addListener(map, 'center_changed', function(){
+            if(bo_markerFlg == true){
+              bo_marker.setPosition(map.getCenter());
+              bo_marker.setMap(map);
+            }
+      　　});
+      　　//中央に降車地ピンを表示し続ける
+          google.maps.event.addListener(map, 'center_changed', function(){
+            if(de_markerFlg == true){
+              de_marker.setPosition(map.getCenter());
+              de_marker.setMap(map);
+            }
+          });
+        }
+        
+        function startGps(){
+          setInterval("dispGps()",1000);
+        }
+        
+        function dispGps(){
+          // 現在地を取得
+          navigator.geolocation.watchPosition(
+          // 取得成功した場合
+          function(position){
+            // 緯度・経度を変数に格納
+            var now_LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            //ピンを設置
+            de_marker = new google.maps.Marker({
+              position: now_LatLng,
+              map: map,
+              icon: new google.maps.MarkerImage(
+                'de_pin.png',
+                new google.maps.Size(60, 60),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(23, 45)
+              )
+            });
+          },
+          // 取得失敗した場合
+          function(error) {
+            // エラーメッセージを表示
+            switch(error.code) {
+              case 1: // PERMISSION_DENIED
+                alert("位置情報の利用が許可されていません");
+                break;
+              case 2: // POSITION_UNAVAILABLE
+                alert("現在位置が取得できませんでした");
+                break;  
+              case 3: // TIMEOUT
+                alert("タイムアウトになりました");
+                break;
+              default:
+                alert("その他のエラー(エラーコード:"+error.code+")");
+                break;
+              }
+            }
+          );
+        }
+        
+        //乗車地ボタンを押下時
+        function boarding(){
+          if(routeResetFlg == true){
+            routeReset();
+          }
+          //ボタン制御
+          $('#bo1').addClass('disabled');
+          $('#de1').addClass('disabled');
+          $('#go').addClass('disabled');
+          $('#bo2').removeClass('disabled');
+          if(bo_selectFlg == true){
+            bo_marker.setMap(null);//マーカー削除
+          }
+          bo_markerFlg = true;
+          bo_marker = new google.maps.Marker({
+            position: map.getCenter(),
+            map: map,
+            icon: new google.maps.MarkerImage(
+              'bo_pin.png',
+              new google.maps.Size(60, 60),
+              new google.maps.Point(0, 0),
+              new google.maps.Point(23, 45)
+            )
+          });
+        }
+        
+        //降車地ボタンを押下時
+        function destination(){
+        　if(routeResetFlg == true){
+        　  routeReset();
+        　}
+        　//ボタン制御
+          $('#de1').addClass('disabled');
+          $('#bo1').addClass('disabled');
+          $('#go').addClass('disabled');
+          $('#de2').removeClass('disabled');
+          if(de_selectFlg == true){
+            de_marker.setMap(null);//マーカー削除
+          }
+          de_markerFlg = true;
+          de_marker = new google.maps.Marker({
+            position: map.getCenter(),
+            map: map,
+            icon: new google.maps.MarkerImage(
+              'de_pin.png',
+              new google.maps.Size(60, 60),
+              new google.maps.Point(0, 0),
+              new google.maps.Point(23, 45)
+            )
+          });
+        }
+        
+        //乗車地決定ボタンを押下時
+        function bo_decision(){
+          bo_markerFlg = false;
+          bo_selectFlg = true;
+          $('#bo2').addClass('disabled');
+          $('#bo1').removeClass('disabled');
+          $('#de1').removeClass('disabled');
+          if(bo_selectFlg == true && de_selectFlg == true){
+            $('#go').removeClass('disabled');
+          }
+        }
+        
+        //降車地決定ボタンを押下時
+        function de_decision(){
+          de_markerFlg = false;
+          de_selectFlg = true;
+          $('#de2').addClass('disabled');
+          $('#de1').removeClass('disabled');
+          $('#bo1').removeClass('disabled');
+          if(bo_selectFlg == true && de_selectFlg == true){
+            $('#go').removeClass('disabled');
+          }
+        }
+        
+        //GOボタンを押下時
+        function go_event(){
+          var rendererOptions = {
+            map: map,
+            draggable: false,//マーカーや経路をドラッグさせない
+    	    preserveViewport: false,//経路
+    	    suppressMarkers: true//デフォルトマーカーを消す
+  		  };
+  		  
+          directionsDisplay = new google.maps.DirectionsRenderer(rendererOptions);//ルート検索用
+          
+          startSpot = bo_marker.getPosition();//乗車地
+          endSpot = de_marker.getPosition();//降車地
+          
+          calcRoute(startSpot,endSpot);//ルート等表示
+          
+        }
+        
+        //ルート情報、距離、時間を表示
+        function calcRoute(startSpot,endSpot){
+          var request={
+            origin:startSpot,
+            destination:endSpot,
+            travelMode:google.maps.DirectionsTravelMode.DRIVING
+          };
+          directionsService.route(request, function(response, status) {
+            if(status==google.maps.DirectionsStatus.OK) {
+              directionsDisplay.setDirections(response);
+              distance = response.routes[0].legs[0].distance.value;//距離取得
+              duration = response.routes[0].legs[0].duration.value;//かかる時間取得
+              
+              //大きい単位をなおす
+              if(distance >= 1000){
+                km = Math.floor(distance / 1000) + "km";
+              }
+              if(duration >= 60){
+                if(duration >= 3600){
+                  hour = Math.floor(duration / 3600) + "h";
+                }
+                minute = Math.floor(duration % 3600 / 60) + "m";
+              }
+              //最少単位
+              meter = distance % 1000;
+              seconds = duration % 60;
+              
+              document.getElementById('distance').textContent = "distance:" + km + meter + "m";
+              document.getElementById('duration').textContent = "duration:" + hour + minute + seconds + "s";
+              routeResetFlg = true;
+              $('#go').addClass('disabled');
+            }
+          });
+        }
+        
+        function routeReset(){
+          directionsDisplay.setMap(null);
+          routeResetFlg = false;
+          document.getElementById('distance').textContent = "";
+          document.getElementById('duration').textContent = "";
+        }
+      </script>
+      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnQeGTLtBt7yEhUy6REkt9zgQt7DseuMc&callback=initMap&libraries=geometry&sensor=false"  async defer>
+      </script>
+      <script>
+         $(document).ready(function() {
+            $('select').material_select();
+         });
+         function bo_change(bo){
+           if(bo.value == "Map Select"){
+             //マップ上で選択を選んだ場合
+             //既にマップ上で選択が選ばれていた場合
+             if(bo_markerFlg == true){
+               bo_markerFlg = false;
+               bo_marker.setMap(null);//マーカー削除
+             }
+             boarding();
+      	   }else if(bo.value == "Get the You are here"){
+      	     
+      	     bo_pinCheck();
+      	     // Geolocation APIに対応している
+      	     if (navigator.geolocation) {
+               // 現在地を取得
+               navigator.geolocation.getCurrentPosition(
+                 // 取得成功した場合
+                 function(position){
+                   // 緯度・経度を変数に格納
+                   var now_LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                   //ピンを設置
+             　    bo_marker = new google.maps.Marker({
+                     position: now_LatLng,
+                     map: map,
+                     icon: new google.maps.MarkerImage(
+                       'bo_pin.png',
+                       new google.maps.Size(60, 60),
+                       new google.maps.Point(0, 0),
+                       new google.maps.Point(23, 45)
+                     )
+                   });
+                   map.panTo(now_LatLng);//マップ視点をピンの位置に移動
+                   bo_selectFlg = true;//ピン設置判定のフラグを設置状態に
+                   if(bo_selectFlg == true && de_selectFlg == true){
+                     $('#go').removeClass('disabled');
+                   }
+                 },
+                 // 取得失敗
+                 function(error) {
+                   // エラーメッセージ
+                   switch(error.code) {
+                     case 1: // PERMISSION_DENIED
+                       alert("位置情報の利用が許可されていません");
+                       break;
+                     case 2: // POSITION_UNAVAILABLE
+                       alert("現在位置が取得できませんでした");
+                       break;  
+                     case 3: // TIMEOUT
+                       alert("タイムアウトになりました");
+                       break;
+                     default:
+                       alert("その他のエラー(エラーコード:"+error.code+")");
+                       break;
+                   }
+                 }
+               );
+             }else{
+               alert("この端末では位置情報が取得できません");
+             }
+      	   }else{
+      	   //登録済みの候補地から選択した場合
+      	     //既にルート表示をしているか
+      	     if(routeResetFlg == true){
+               routeReset();
+             }
+             
+             //マップ上で選択を押した後か
+             if(bo_markerFlg == true){
+               bo_markerFlg = false;
+               bo_selectFlg = true;
+               $('#bo2').addClass('disabled');
+             }
+             
+             //既にピンが設置されているか
+             if(bo_selectFlg == true){
+               bo_marker.setMap(null);//マーカー削除
+             }
+             
+             var coord_tmp = bo.value.split(',');//数値に変換前の退避用
+             for(var i = 0;i <= 1;i++){
+               coord[i] = Number(coord_tmp[i]);
+             }
+             coord_LL = new google.maps.LatLng(coord[0],coord[1]);
+             //ピンを設置
+             bo_marker = new google.maps.Marker({
+               position: coord_LL,
+               map: map,
+               icon: new google.maps.MarkerImage(
+               'bo_pin.png',
+               new google.maps.Size(60, 60),
+               new google.maps.Point(0, 0),
+               new google.maps.Point(23, 45)
+               )
+             });
+             map.panTo(coord_LL);//マップ視点をピンの位置に移動
+             bo_selectFlg = true;//ピン設置判定のフラグを設置状態に
+           }
+         }
+         
+         function de_change(de){
+           if(de.value == "Map Select"){
+             //マップ上で選択を選んだ場合
+             //既にマップ上で選択が選ばれていた場合
+             if(de_markerFlg == true){
+               de_markerFlg = false;
+               de_marker.setMap(null);//マーカー削除
+             }
+             destination();
+      	   }else if(de.value == "Get the You are here"){
+      	     
+      	     de_pinCheck();
+      	     // Geolocation APIに対応している
+      	     if (navigator.geolocation) {
+               // 現在地を取得
+               navigator.geolocation.getCurrentPosition(
+                 // 取得成功した場合
+                 function(position){
+                   // 緯度・経度を変数に格納
+                   var now_LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                   //ピンを設置
+             　    de_marker = new google.maps.Marker({
+                     position: now_LatLng,
+                     map: map,
+                     icon: new google.maps.MarkerImage(
+                       'de_pin.png',
+                       new google.maps.Size(60, 60),
+                       new google.maps.Point(0, 0),
+                       new google.maps.Point(23, 45)
+                     )
+                   });
+                   map.panTo(now_LatLng);//マップ視点をピンの位置に移動
+                   de_selectFlg = true;//ピン設置判定のフラグを設置状態に
+                   if(bo_selectFlg == true && de_selectFlg == true){
+                     $('#go').removeClass('disabled');
+                   }
+                 },
+                 // 取得失敗した場合
+                 function(error) {
+                   // エラーメッセージを表示
+                   switch(error.code) {
+                     case 1: // PERMISSION_DENIED
+                       alert("位置情報の利用が許可されていません");
+                       break;
+                     case 2: // POSITION_UNAVAILABLE
+                       alert("現在位置が取得できませんでした");
+                       break;  
+                     case 3: // TIMEOUT
+                       alert("タイムアウトになりました");
+                       break;
+                     default:
+                       alert("その他のエラー(エラーコード:"+error.code+")");
+                       break;
+                   }
+                 }
+               );
+             }else{
+               alert("この端末では位置情報が取得できません");
+             }
+      	   }else{
+      	   //登録済みの候補地から選択した場合
+      	     de_pinCheck();
+             
+             var coord_tmp = de.value.split(',');//数値に変換前の退避用
+             for(var i = 0;i <= 1;i++){
+               coord[i] = Number(coord_tmp[i]);
+             }
+             coord_LL = new google.maps.LatLng(coord[0],coord[1]);
+             //ピンを設置
+             de_marker = new google.maps.Marker({
+               position: coord_LL,
+               map: map,
+               icon: new google.maps.MarkerImage(
+               'de_pin.png',
+               new google.maps.Size(60, 60),
+               new google.maps.Point(0, 0),
+               new google.maps.Point(23, 45)
+               )
+             });
+             map.panTo(coord_LL);//マップ視点をピンの位置に移動
+             de_selectFlg = true;//ピン設置判定のフラグを設置状態に
+             if(bo_selectFlg == true && de_selectFlg == true){
+               $('#go').removeClass('disabled');
+             }
+           }
+         }
+         
+         function bo_pinCheck(){
+           //既にルート表示をしているか
+      	   if(routeResetFlg == true){
+             routeReset();
+           }
+           
+           //「マップ上で選択」を押した後か
+           if(bo_markerFlg == true){
+             bo_markerFlg = false;
+             bo_selectFlg = true;
+             $('#bo2').addClass('disabled');
+           }
+           
+           //既にピンが設置されているか
+           if(bo_selectFlg == true){
+             bo_marker.setMap(null);//マーカー削除
+           }
+         }
+         
+         function de_pinCheck(){
+           //既にルート表示をしているか
+      	   if(routeResetFlg == true){
+             routeReset();
+           }
+           
+           //「マップ上で選択」を押した後か
+           if(de_markerFlg == true){
+             de_markerFlg = false;
+             de_selectFlg = true;
+             $('#de2').addClass('disabled');
+           }
+           
+           //既にピンが設置されているか
+           if(de_selectFlg == true){
+             de_marker.setMap(null);//マーカー削除
+           }
+         }
+      </script>
+    </head>
+    <body class="light-green lighten-4" style="height:100%">
+      <div id="map"></div></br>
+      <div class="row">
+        <div class="col s4 offset-s2 " style="height:20%">
+        <label style="color:#ff0000">Boarding Area</label>
+        <select onchange="bo_change(this)">
+          <option value = "" disabled selected>Select Area</option>
+          <option value = "Map Select">Map Select</option>
+          <option value = "Get the You are here">Get the You are here</option>
+          <option value = "34.666655,133.918335">Okayama Station</option>
+          <option value = "34.667236,133.936101">Korakuen</option>
+          <option value = "34.595744,133.771763">Bikantiku</option>
+        </select></div>
+        <div class="col s4" style="height:20%">
+        <label style="color:#0000ff">Destination</label>
+        <select onchange="de_change(this)">
+          <option value = "" disabled selected>Select Area</option>
+          <option value = "Map Select">Map Select</option>
+          <option value = "Get the You are here">Get the You are here</option>
+          <option value = "34.666655,133.918335">Okayama Station</option>
+          <option value = "34.667236,133.936101">Korakuen</option>
+          <option value = "34.595744,133.771763">Bikantiku</option>
+        </select></div>
+      </div>
+      <div class="row">
+        <div class="col s3 offset-s3" style="height:20%"><a class="btn waves-effect waves-light disabled red accent-2" id="bo2" style="width:80%; height:80%" onclick="bo_decision()">Decision</a></div>
+        <div class="col s3 offset-s1" style="height:20%"><a class="btn waves-effect waves-light disabled blue darken-4" id="de2" style="width:80%; height:80%" onclick="de_decision()">Decision</a></div>
+      </div>
+      <div class="row">
+        <div class="col s6 offset-s4" style="height:20%"><a class="btn waves-effect waves-light disabled" id="go" style="width:80%; height:80%" onclick="go_event()">GO</a></div>
+      </div>
+      <span id="distance" style="font-size:24px; position:relative; left:10%">distance:</span>
+      <a class="btn waves-effect waves-light" style="width:100px; height:40px; position:relative; left:50%; top:20px;" onclick="startGps()">Location</a></br>
+      <span id="duration" style="font-size:24px; position:relative; left:10%">duration:</span>
+  </html>
