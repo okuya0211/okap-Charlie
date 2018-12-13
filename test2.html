@@ -7,7 +7,7 @@
          href = "https://fonts.googleapis.com/icon?family=Material+Icons">
       <link type="text/css" rel="stylesheet" href="materialize/css/materialize.css"  media="screen,projection"/>
       <script type = "text/javascript"
-         src = "https://code.jquery.com/jquery-2.1.1.min.js"></script>           
+         src = "https://code.jquery.com/jquery-2.1.1.min.js"></script>
       <script src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js">
       </script>
       <!--<link type="text/css" rel="stylesheet" href="materialize/css/materialize.css"  media="screen,projection"/>
@@ -30,8 +30,10 @@
       	var de_selectFlg = false;//trueだと既にピンを設置している
       	var de_markerFlg = false;//trueでピンを中央に表示し続ける
       	var bo_markerFlg = false;//trueでピンを中央に表示し続ける
+      	var location_markerFlg = false;//trueで現在地を表示し続けている状態
       	var de_marker;//乗車地ピン
       	var bo_marker;//降車地ピン
+      	var location_marker;//現在地表示ピン
       	var directionsService;//APIを使うため
       	var directionsDisplay;//APIを使うため
       	var startSpot="";//乗車地
@@ -81,24 +83,36 @@
           setInterval("dispGps()",1000);
         }
         
+        function endGps(){
+          clearInterval("dispGps()");
+          if(location_markerFlg == true){
+            location_marker.setMap(null);//マーカー削除
+            location_markerFlg = false;
+          }
+        }
+        
         function dispGps(){
           // 現在地を取得
           navigator.geolocation.watchPosition(
           // 取得成功した場合
           function(position){
             // 緯度・経度を変数に格納
+            if(location_markerFlg == true){
+              location_marker.setMap(null);//マーカー削除
+            }
             var now_LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
             //ピンを設置
-            de_marker = new google.maps.Marker({
+            location_marker = new google.maps.Marker({
               position: now_LatLng,
               map: map,
               icon: new google.maps.MarkerImage(
-                'de_pin.png',
+                'location_pin.png',
                 new google.maps.Size(60, 60),
                 new google.maps.Point(0, 0),
                 new google.maps.Point(23, 45)
               )
             });
+            location_markerFlg = true;
           },
           // 取得失敗した場合
           function(error) {
@@ -520,6 +534,7 @@
         <div class="col s6 offset-s4" style="height:20%"><a class="btn waves-effect waves-light disabled" id="go" style="width:80%; height:80%" onclick="go_event()">GO</a></div>
       </div>
       <span id="distance" style="font-size:24px; position:relative; left:10%">distance:</span>
-      <a class="btn waves-effect waves-light" style="width:100px; height:40px; position:relative; left:50%; top:20px;" onclick="startGps()">Location</a></br>
+      <a class="btn waves-effect waves-light" style="width:100px; height:30px; position:relative; left:50%;" onclick="startGps()">GPS_on</a>
+      <a class="btn waves-effect waves-light" style="width:100px; height:30px; position:relative; left:50%;" onclick="endGps()">GPS_off</a></br>
       <span id="duration" style="font-size:24px; position:relative; left:10%">duration:</span>
   </html>
