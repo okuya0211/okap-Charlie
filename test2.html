@@ -42,7 +42,10 @@
       	var duration;//かかる時間
       	var routeResetFlg = false;//trueでルート表示をしている状態
       	var coord_LL;//LatLng型で座標のデータを取得
-      	var coord = new Array(2);//座標データ（int型配列）
+      	var coord = new Array(2);//座標データ（int型配列
+      	var geolocation;//位置情報取得用 IDが返ってくる
+      	var interval;//GPS表示の継続処理を止める用
+      	var i = 0;
       	
       	//距離、時間表示用
       	var km = "";//この単位までいかない場合も表示させるので初期化しておく
@@ -80,26 +83,16 @@
         }
         
         function startGps(){
-          setInterval("dispGps()",1000);
-        }
-        
-        function endGps(){
-          clearInterval("dispGps()");
-          if(location_markerFlg == true){
-            location_marker.setMap(null);//マーカー削除
-            location_markerFlg = false;
-          }
-        }
-        
-        function dispGps(){
           // 現在地を取得
-          navigator.geolocation.watchPosition(
+          geolocation = navigator.geolocation.watchPosition(
           // 取得成功した場合
           function(position){
             // 緯度・経度を変数に格納
             if(location_markerFlg == true){
               location_marker.setMap(null);//マーカー削除
             }
+            i += 1;
+            document.getElementById('distance').textContent = String(i);
             var now_LatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
             //ピンを設置
             location_marker = new google.maps.Marker({
@@ -133,7 +126,23 @@
               }
             }
           );
+          //interval = setInterval("dispGps()",1000);
         }
+        
+        function endGps(){
+          //clearInterval(interval);
+          navigator.geolocation.clearWatch(geolocation);
+          if(location_markerFlg == true){
+            location_marker.setMap(null);//マーカー削除
+            location_markerFlg = false;
+          }
+          document.getElementById('distance').textContent ="げおおわり";
+        }
+        
+        /*
+        function dispGps(){
+          document.getElementById('distance').textContent ="げおろけいしょん";
+        }*/
         
         //乗車地ボタンを押下時
         function boarding(){
