@@ -8,7 +8,7 @@
       <link type="text/css" rel="stylesheet" href="materialize/css/materialize.css"  media="screen,projection"/>
       <script type = "text/javascript"
          src = "https://code.jquery.com/jquery-2.1.1.min.js"></script>
-      <script src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.3/js/materialize.min.js">
+      <<script src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
       </script>
       <style>
       	#map {
@@ -57,6 +57,7 @@
 //削除する
         var i = 0;
 //ここまで
+
       	
       	function initMap() {
       	  //マップ初期化
@@ -289,9 +290,13 @@
         
         
 //データの取得等の処理
-        
+        /*
          $(document).ready(function() {
             $('select').material_select();
+         });
+		 */
+		 $(document).ready(function(){
+           $('select').formSelect();
          });
          
          //降車地選択時
@@ -564,10 +569,23 @@
         <select onchange="bo_change(this)">
           <option value = "" disabled selected>Select Area</option>
           <option value = "Map Select">Map Select</option>
-          <option value = "Get the You are here">Get the You are here</option>
           <option value = "34.666655,133.918335">Okayama Station</option>
-          <option value = "34.667236,133.936101">Korakuen</option>
-          <option value = "34.595744,133.771763">Bikantiku</option>
+          <option value = "34.667236,133.936101">Okayama Korakuen</option>
+          <option value = "34.670720,133.850655">Kibitsu Shrine</option>
+		  <option value = "34.676702,133.863858">Kibitsuhiko Shrine</option>
+		  <option value = "34.674649,133.906199">Ikeda Zoo</option>
+		  <option value = "34.709379,133.832798">Saijo Inari</option>
+		  <option value = "34.595744,133.771763">Kurashiki Bikan Historical Quarter</option>
+		  <option value = "34.596111,133.770622">Ohara Museum of Art</option>
+		  <option value = "35.062753,134.005497">Tsuyama Castle</option>
+		  <option value = "35.061530,134.005636">Tsuyama Castle Kakuzan Park</option>
+		  <option value = "34.725474,133.762373">Ki castle</option>
+		  <option value = "34.666390,133.782190">Bitch? Kokubun-ji Temple</option>
+		  <option value = "35.295756,133.678303">Hiruzen plateau</option>
+		  <option value = "35.291206, 133.63520">Hiruzenkogen Center Joyful Park</option>
+		  <option value = "34.866641,134.012456">Okayama agriculture park German Forest Kronenberg</option>
+		  <option value = "34.625743,134.156250">Ushimado olive garden</option>
+		  <option value = "34.721641,134.106933">Bizen Osafune Japanese Sword Museum</option>
         </select></div>
         <div class="col s4" style="height:20%">
         <label style="color:#0000ff">Destination</label>
@@ -576,8 +594,22 @@
           <option value = "Map Select">Map Select</option>
           <option value = "Get the You are here">Get the You are here</option>
           <option value = "34.666655,133.918335">Okayama Station</option>
-          <option value = "34.667236,133.936101">Korakuen</option>
-          <option value = "34.595744,133.771763">Bikantiku</option>
+          <option value = "34.667236,133.936101">Okayama Korakuen</option>
+          <option value = "34.670720,133.850655">Kibitsu Shrine</option>
+		  <option value = "34.676702,133.863858">Kibitsuhiko Shrine</option>
+		  <option value = "34.674649,133.906199">Ikeda Zoo</option>
+		  <option value = "34.709379,133.832798">Saijo Inari</option>
+		  <option value = "34.595744,133.771763">Kurashiki Bikan Historical Quarter</option>
+		  <option value = "34.596111,133.770622">Ohara Museum of Art</option>
+		  <option value = "35.062753,134.005497">Tsuyama Castle</option>
+		  <option value = "35.061530,134.005636">Tsuyama Castle Kakuzan Park</option>
+		  <option value = "34.725474,133.762373">Ki castle</option>
+		  <option value = "34.666390,133.782190">Bitch? Kokubun-ji Temple</option>
+		  <option value = "35.295756,133.678303">Hiruzen plateau</option>
+		  <option value = "35.291206, 133.63520">Hiruzenkogen Center Joyful Park</option>
+		  <option value = "34.866641,134.012456">Okayama agriculture park German Forest Kronenberg</option>
+		  <option value = "34.625743,134.156250">Ushimado olive garden</option>
+		  <option value = "34.721641,134.106933">Bizen Osafune Japanese Sword Museum</option>
         </select></div>
       </div>
       <div class="row">
