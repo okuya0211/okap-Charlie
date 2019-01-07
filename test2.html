@@ -1,23 +1,135 @@
 <!DOCTYPE html>
-  <html style="height:100%;">
+  <html style="height:100%; width:100%;">
     <head>
       </br>
-      <meta name = "viewport" content = "width = device-width, initial-scale = 1">
+      <meta name = "viewport" content = "width = device-width, initial-scale = 1, user-scalable = no">
       <link rel = "stylesheet"
          href = "https://fonts.googleapis.com/icon?family=Material+Icons">
       <link type="text/css" rel="stylesheet" href="materialize/css/materialize.css"  media="screen,projection"/>
       <script type = "text/javascript"
          src = "https://code.jquery.com/jquery-2.1.1.min.js"></script>
-      <<script src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
+      <script src = "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
       </script>
-      <style>
+      <style type="text/css">
       	#map {
       	  width: 70%;
           height: 55%;
           margin: auto;
       	}
+      	
+      	/*画面サイズに応じたボタン、フォントのサイズ変更*/
+      	/*横幅を判定して処理*/
+      	@media only screen and (min-width:1px){
+      	  section.dispText{
+            font-size: 12px;
+          }
+          section.dispText a{
+            font-size: 1px;
+            width:50px;
+            height:30px;
+          }
+      	}
+      	
+      	@media only screen and (min-width:300px){
+      	  section.dispText{
+            font-size: 16px;
+          }
+          section.dispText a{
+            font-size: 10px;
+            width:60px;
+            height:30px;
+          }
+      	}
+      	
+      	@media only screen and (min-width:400px){
+      	  section.dispText{
+            font-size: 20px;
+          }
+          section.dispText a{
+            font-size: 14px;
+            width:80px;
+            height:30px;
+          }
+      	}
+      	
+      	@media only screen and (min-width:500px){
+      	  section.dispText{
+            font-size: 24px;
+          }
+          section.dispText a{
+            font-size: 16px;
+            width:100px;
+            height:30px;
+          }
+        }
+        
+        @media only screen and (min-width:600px){
+          section.dispText{
+            font-size: 28px;
+          }
+          section.dispText a{
+            font-size: 18px;
+            width:120px;
+            height:30px;
+          }
+        }
+        
+        @media only screen and (min-width:700px){
+          section.dispText{
+            font-size: 32px;
+          }
+          section.dispText a{
+            font-size: 20px;
+            width:140px;
+            height:30px;
+          }
+        }
+        
+        @media only screen and (min-width:800px){
+          section.dispText{
+            font-size: 36px;
+          }
+          section.dispText a{
+            font-size: 22px;
+            width:180px;
+            height:30px;
+          }
+        }
+        
+        @media only screen and (min-width:900px){
+          section.dispText{
+            font-size: 40px;
+          }
+          section.dispText a{
+            font-size: 24px;
+            width:200px;
+            height:30px;
+          }
+        }
+        
+        @media only screen and (min-width:1000px){
+          section.dispText{
+            font-size: 44px;
+          }
+          section.dispText a{
+            font-size: 26px;
+            width:220px;
+            height:30px;
+          }
+        }
+        
+        @media only screen and (min-width:1100px){
+          section.dispText{
+            font-size: 48px;
+          }
+          section.dispText a{
+            font-size: 28px;
+            width:240px;
+            height:30px;
+          }
+        }
       </style>
-      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnQeGTLtBt7yEhUy6REkt9zgQt7DseuMc&callback=initMap&libraries=geometry&sensor=false"  async defer>
+      <script src="https://maps.googleapis.com/maps/api/js?language=en&key=AIzaSyCnQeGTLtBt7yEhUy6REkt9zgQt7DseuMc&callback=initMap&libraries=geometry&sensor=false"  async defer>
       </script>
       <script>
         //ピン関連
@@ -275,6 +387,7 @@
                 alert("その他のエラー(エラーコード:"+error.code+")");
                 break;
               }
+              endGps();
             }
           );
         }
@@ -299,7 +412,7 @@
            $('select').formSelect();
          });
          
-         //降車地選択時
+         //乗車地選択時
          function bo_change(bo){
            if(bo.value == "Map Select"){//マップ上で選択を選んだ場合
              //既にマップ上で選択が選ばれていた場合
@@ -398,6 +511,9 @@
              });
              map.panTo(coord_LL);//マップ視点をピンの位置に移動
              bo_selectFlg = true;//ピン設置判定のフラグを設置状態に
+             if(bo_selectFlg == true && de_selectFlg == true){
+               $('#go').removeClass('disabled');
+             }
            }
          }
          
@@ -561,7 +677,7 @@
          }
       </script>
     </head>
-    <body class="light-green lighten-4" style="height:100%">
+    <body class="light-green lighten-4" style="height:100%; width:100%; overflow-x:hidden;">
       <div id="map"></div></br>
       <div class="row">
         <div class="col s4 offset-s2 " style="height:20%">
@@ -580,7 +696,7 @@
 		  <option value = "35.062753,134.005497">Tsuyama Castle</option>
 		  <option value = "35.061530,134.005636">Tsuyama Castle Kakuzan Park</option>
 		  <option value = "34.725474,133.762373">Ki castle</option>
-		  <option value = "34.666390,133.782190">Bitch? Kokubun-ji Temple</option>
+		  <option value = "34.666390,133.782190">Bitchu Kokubun-ji Temple</option>
 		  <option value = "35.295756,133.678303">Hiruzen plateau</option>
 		  <option value = "35.291206, 133.63520">Hiruzenkogen Center Joyful Park</option>
 		  <option value = "34.866641,134.012456">Okayama agriculture park German Forest Kronenberg</option>
@@ -604,7 +720,7 @@
 		  <option value = "35.062753,134.005497">Tsuyama Castle</option>
 		  <option value = "35.061530,134.005636">Tsuyama Castle Kakuzan Park</option>
 		  <option value = "34.725474,133.762373">Ki castle</option>
-		  <option value = "34.666390,133.782190">Bitch? Kokubun-ji Temple</option>
+		  <option value = "34.666390,133.782190">Bitchu Kokubun-ji Temple</option>
 		  <option value = "35.295756,133.678303">Hiruzen plateau</option>
 		  <option value = "35.291206, 133.63520">Hiruzenkogen Center Joyful Park</option>
 		  <option value = "34.866641,134.012456">Okayama agriculture park German Forest Kronenberg</option>
@@ -613,19 +729,20 @@
         </select></div>
       </div>
       <div class="row">
-        <div class="col s3 offset-s3" style="height:20%"><a class="btn waves-effect waves-light disabled red accent-2" id="bo2" style="width:80%; height:80%" onclick="bo_decision()">Decision</a></div>
-        <div class="col s3 offset-s1" style="height:20%"><a class="btn waves-effect waves-light disabled blue darken-4" id="de2" style="width:80%; height:80%" onclick="de_decision()">Decision</a></div>
+        <div class="col s3 offset-s3 flow-text" style="height:20%"><a class="btn waves-effect waves-light disabled red accent-2" id="bo2" style="width:80%; height:80%" onclick="bo_decision()">Decision</a></div>
+        <div class="col s3 offset-s1 flow-text" style="height:20%"><a class="btn waves-effect waves-light disabled blue darken-4" id="de2" style="width:80%; height:80%" onclick="de_decision()">Decision</a></div>
       </div>
       <div class="row">
         <div class="col s6 offset-s4" style="height:20%"><a class="btn waves-effect waves-light disabled" id="go" style="width:80%; height:80%" onclick="go_event()">GO</a></div>
       </div>
-      <span id="distance" style="font-size:24px; position:relative; left:10%">distance:</span>
-      <a class="btn waves-effect waves-light" style="width:100px; height:30px; position:relative; left:50%;" onclick="startGps()">GPS_on</a>
-      <a class="btn waves-effect waves-light" style="width:100px; height:30px; position:relative; left:50%;" onclick="endGps()">GPS_off</a></br>
-      <span id="duration" style="font-size:24px; position:relative; left:10%">duration:</span>
-      <div id="bo_address" style="font-size:24px; position:relative; left:10%">bo_address:</div>
-      <div id="de_address" style="font-size:24px; position:relative; left:10%">de_address:</div>
-      <div id="bo_latlng" style="font-size:24px; position:relative; left:10%">bo_latlng:</div>
-      <div id="de_latlng" style="font-size:24px; position:relative; left:10%">de_latlng:</div>
-      
+      <section class="dispText">
+        <span id="distance" style="position:relative; left:10%">distance:</span>
+        <a class="btn waves-effect waves-light" style="padding: 0;position:absolute; right:20%;" onclick="startGps()">GPS_on</a></br>
+        <span id="duration" style="position:relative; left:10%">duration:</span>
+        <a class="btn waves-effect waves-light" style="padding: 0;position:absolute; right:20%;" onclick="endGps()">GPS_off</a></br>
+        <div id="bo_address" style="position:relative; left:10%">bo_address:</div>
+        <div id="de_address" style="position:relative; left:10%">de_address:</div>
+        <div id="bo_latlng" style="position:relative; left:10%">bo_latlng:</div>
+        <div id="de_latlng" style="position:relative; left:10%">de_latlng:</div>
+      </section>
   </html>
